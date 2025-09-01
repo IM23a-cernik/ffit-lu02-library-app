@@ -1,6 +1,9 @@
 package ch.bzz.io;
 
+import ch.bzz.db.BookPersistor;
 import ch.bzz.model.Book;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +13,8 @@ import java.util.List;
 import static ch.bzz.io.BookImporter.importBooks;
 
 public class DelimitedFileReader {
+    private static final Logger log = LoggerFactory.getLogger(DelimitedFileReader.class);
+
     public static void readFile(String arg) {
         String delimiter = "\t";
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(arg))) {
@@ -29,7 +34,7 @@ public class DelimitedFileReader {
             importBooks(books);
             System.out.println("Import abgeschlossen.");
         } catch (IOException e) {
-            System.out.println("Datei unter dem Pfad " + arg + " konnte nicht gelesen werden.");
+            log.error("Datei unter dem Pfad {} konnte nicht gelesen werden.", arg);
         }
     }
 }
