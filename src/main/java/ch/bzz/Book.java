@@ -50,7 +50,8 @@ public class Book {
     }
 
     public static void importBooks(List<Book> books) {
-        String sql = "INSERT INTO books (id, isbn, title, author, publication_year) VALUES (?, ?, ?, ?, ?)";
+        String updateSql = "UPDATE books SET isbn = ?, title = ?, author = ?, publication_year = ? WHERE id = ?";
+        String insertSql = "INSERT INTO books (id, isbn, title, author, publication_year) VALUES (?, ?, ?, ?, ?)";
         Properties props = new Properties();
         try {
             props.load(new FileInputStream("config.properties"));
@@ -58,17 +59,37 @@ public class Book {
             throw new RuntimeException(e);
         }
         try (Connection con = DriverManager.getConnection(props.getProperty("DB_URL"), props.getProperty("DB_USER"), props.getProperty("DB_PASSWORD"));
-             PreparedStatement pstmt = con.prepareStatement(sql)) {
-            for (Book book : books) {
-                pstmt.setInt(1, book.id);
-                pstmt.setString(2, book.isbn);
-                pstmt.setString(3, book.title);
-                pstmt.setString(4, book.author);
-                pstmt.setInt(5, book.year);
-                pstmt.executeUpdate();
+             PreparedStatement updatePstmt = con.prepareStatement(updateSql);
+             PreparedStatement insertPstmt = con.prepareStatement(insertSql)) {
+
+            boolean originalAutoCommit = con.getAutoCommit();
+            con.setAutoCommit(false);
+            try {
+                for (Book book : books) {
+                    updatePstmt.setString(1, book.isbn);
+                    updatePstmt.setString(2, book.title);
+                    updatePstmt.setString(3, book.author);
+                    updatePstmt.setInt(4, book.year);
+                    updatePstmt.setInt(5, book.id);
+                    int updated = updatePstmt.executeUpdate();
+
+                    if (updated == 0) {
+                        insertPstmt.setInt(1, book.id);
+                        insertPstmt.setString(2, book.isbn);
+                        insertPstmt.setString(3, book.title);
+                        insertPstmt.setString(4, book.author);
+                        insertPstmt.setInt(5, book.year);
+                        insertPstmt.executeUpdate();
+                    }
+                }
+                con.commit();
+            } catch (SQLException e) {
+                con.rollback();
+                throw e;
+            } finally {
+                con.setAutoCommit(originalAutoCommit);
             }
-        } catch (
-                SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
