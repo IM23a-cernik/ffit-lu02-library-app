@@ -48,4 +48,28 @@ public class Book {
         }
         return books;
     }
+
+    public static void importBooks(List<Book> books) {
+        String sql = "INSERT INTO books (id, isbn, title, author, publication_year) VALUES (?, ?, ?, ?, ?)";
+        Properties props = new Properties();
+        try {
+            props.load(new FileInputStream("config.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (Connection con = DriverManager.getConnection(props.getProperty("DB_URL"), props.getProperty("DB_USER"), props.getProperty("DB_PASSWORD"));
+             PreparedStatement pstmt = con.prepareStatement(sql)) {
+            for (Book book : books) {
+                pstmt.setInt(1, book.id);
+                pstmt.setString(2, book.isbn);
+                pstmt.setString(3, book.title);
+                pstmt.setString(4, book.author);
+                pstmt.setInt(5, book.year);
+                pstmt.executeUpdate();
+            }
+        } catch (
+                SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
