@@ -41,7 +41,7 @@ public class LibraryAppMain {
                     try (BufferedReader reader = Files.newBufferedReader(Paths.get(arg))) {
                         List<Book> books = reader.lines()
                                 .skip(1)
-                                .map(line -> line.split(delimiter))
+                                .map(line -> line.split(delimiter, -1))
                                 .map(cols -> {
                                     Book b = new Book();
                                     b.id = Integer.parseInt(cols[0]);
