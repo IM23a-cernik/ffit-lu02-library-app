@@ -1,20 +1,26 @@
 package ch.bzz.model;
 
-import ch.bzz.db.Database;
+import jakarta.persistence.*;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+@Entity
+@Table(name = "books")
 public class Book {
-    int id;
-    String isbn;
-    String title;
-    String author;
-    int year;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "isbn", nullable = false, length = 20, unique = true)
+    private String isbn;
+
+    @Column(name = "title", nullable = false, length = 255)
+    private String title;
+
+    @Column(name = "author", nullable = false, length = 255)
+    private String author;
+
+    @Column(name = "publication_year")
+    private Integer year;
 
     public Book() {
     }

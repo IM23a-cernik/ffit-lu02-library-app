@@ -3,7 +3,9 @@ package ch.bzz;
 
 import ch.bzz.db.BookPersistor;
 import ch.bzz.io.DelimitedFileReader;
+import ch.bzz.model.Book;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class LibraryAppMain {
@@ -27,7 +29,10 @@ public class LibraryAppMain {
                     }
                 }
                 case "listBooks" -> {
-                    BookPersistor.listBooks(arg);
+                    List<Book> books = BookPersistor.listBooks(Integer.parseInt(arg));
+                    for (Book book : books) {
+                        System.out.println(book);
+                    }
                 }
                 case "importBooks" -> {
                     DelimitedFileReader.readFile(arg);

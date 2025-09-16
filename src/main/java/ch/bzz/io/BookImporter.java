@@ -1,7 +1,11 @@
 package ch.bzz.io;
 
+import ch.bzz.Config;
 import ch.bzz.db.Database;
 import ch.bzz.model.Book;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,42 +16,20 @@ import java.util.List;
 
 public class BookImporter {
     private static final Logger log = LoggerFactory.getLogger(BookImporter.class);
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("localPU", Config.jpaProperties());
+
     public static void importBooks(List<Book> books) {
-        String updateSql = "UPDATE books SET isbn = ?, title = ?, author = ?, publication_year = ? WHERE id = ?";
-        String insertSql = "INSERT INTO books (id, isbn, title, author, publication_year) VALUES (?, ?, ?, ?, ?)";
-        try (Connection con = Database.getConnection();
-             PreparedStatement updatePstmt = con.prepareStatement(updateSql);
-             PreparedStatement insertPstmt = con.prepareStatement(insertSql)) {
-
-            boolean originalAutoCommit = con.getAutoCommit();
-            con.setAutoCommit(false);
+        try (EntityManager em = emf.createEntityManager()) {
             try {
-                for (Book book : books) {
-                    updatePstmt.setString(1, book.getIsbn());
-                    updatePstmt.setString(2, book.getTitle());
-                    updatePstmt.setString(3, book.getAuthor());
-                    updatePstmt.setInt(4, book.getYear());
-                    updatePstmt.setInt(5, book.getId());
-                    int updated = updatePstmt.executeUpdate();
-
-                    if (updated == 0) {
-                        insertPstmt.setInt(1, book.getId());
-                        insertPstmt.setString(2, book.getIsbn());
-                        insertPstmt.setString(3, book.getTitle());
-                        insertPstmt.setString(4, book.getAuthor());
-                        insertPstmt.setInt(5, book.getYear());
-                        insertPstmt.executeUpdate();
-                    }
+                em.getTransaction().begin();
+                books.forEach(em::merge);
+                em.getTransaction().commit();
+            } catch (RuntimeException e) {
+                if (em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
                 }
-                con.commit();
-            } catch (SQLException e) {
-                con.rollback();
-                log.error("Error while importing books.", e);
-            } finally {
-                con.setAutoCommit(originalAutoCommit);
+                log.error("Error during saving of books to the database:", e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 }
