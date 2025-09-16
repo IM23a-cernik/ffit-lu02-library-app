@@ -17,11 +17,13 @@ public class BookPersistor {
     public static void listBooks(String limit) {
         List<Book> books = new ArrayList<>();
         try {
-            Integer.parseInt(limit);
+            if (limit != null) {
+                Integer.parseInt(limit);
+            }
             try (Connection con = Database.getConnection();
                  Statement stmt = con.createStatement();
                  ResultSet resultSet = stmt.executeQuery(
-                         "SELECT id, isbn, title, author, publication_year FROM books LIMIT " + limit)) {
+                         "SELECT id, isbn, title, author, publication_year FROM books ORDER BY id ASC LIMIT " + limit)) {
 
                 while (resultSet.next()) {
                     Book book = new Book();
