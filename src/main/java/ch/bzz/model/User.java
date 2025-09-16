@@ -2,7 +2,11 @@ package ch.bzz.model;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.sql.Date;
 
 @Entity
 @Table(name = "users")
@@ -27,19 +31,19 @@ public class User {
     @Column(name = "passwordHash", nullable = false, length = 255)
     private String passwordHash;
 
-    @Column(name = "passwordSalt", nullable = false, length = 255)
-    private String passwordSalt;
+    @Column(name = "passwordSalt", nullable = false)
+    private byte[] passwordSalt;
 
-    public User() {}
+    public User() {
+    }
 
-    public User(int id, String firstname, String lastname, Date dateOfBirth, String email, String passwordHash, String passwordSalt) {
-        this.id = id;
+    public User(String firstname, String lastname, Date dateOfBirth, String email, String password) throws NoSuchAlgorithmException {
         this.firstname = firstname;
         this.lastname = lastname;
         this.dateOfBirth = dateOfBirth;
         this.email = email;
-        this.passwordHash = passwordHash;
-        this.passwordSalt = passwordSalt;
+        this.passwordSalt = generateSalt();
+        this.passwordHash = hashPassword(password, this.passwordSalt);
     }
 
     public int getId() {
@@ -49,12 +53,15 @@ public class User {
     public void setId(int id) {
         this.id = id;
     }
+
     public String getFirstname() {
         return firstname;
     }
+
     public void setFirstname(String firstname) {
         this.firstname = firstname;
     }
+
     public String getLastname() {
         return lastname;
     }
@@ -62,12 +69,15 @@ public class User {
     public void setLastname(String lastname) {
         this.lastname = lastname;
     }
+
     public Date getDateOfBirth() {
         return dateOfBirth;
     }
+
     public void setDateOfBirth(Date dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
+
     public String getEmail() {
         return email;
     }
@@ -75,24 +85,30 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+
     public String getPasswordHash() {
         return passwordHash;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public String getPasswordSalt() {
+    public byte[] getPasswordSalt() {
         return passwordSalt;
-    }
-
-    public void setPasswordSalt(String passwordSalt) {
-        this.passwordSalt = passwordSalt;
     }
 
     @Override
     public String toString() {
         return id + " " + firstname + " " + lastname + " " + dateOfBirth + " " + email + " " + passwordHash + " " + passwordSalt;
+    }
+
+    public static byte[] generateSalt() {
+        byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
+        return salt;
+    }
+
+    public static String hashPassword(String password, byte[] salt) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(salt);
+        byte[] hashed = md.digest(password.getBytes());
+        return Base64.getEncoder().encodeToString(hashed);
     }
 }
