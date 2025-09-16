@@ -16,7 +16,7 @@ import java.util.List;
 
 public class BookImporter {
     private static final Logger log = LoggerFactory.getLogger(BookImporter.class);
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("localPU", Config.jpaProperties());
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("localPU", Config.getProperties());
 
     public static void importBooks(List<Book> books) {
         try (EntityManager em = emf.createEntityManager()) {

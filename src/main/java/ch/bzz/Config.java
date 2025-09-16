@@ -25,7 +25,7 @@ public class Config {
     }
 
 
-    public static Properties jpaProperties() {
+    public static Properties getProperties() {
         Properties p = new Properties();
         String url = CACHED.getProperty("jakarta.persistence.jdbc.url",
                 CACHED.getProperty("DB_URL"));

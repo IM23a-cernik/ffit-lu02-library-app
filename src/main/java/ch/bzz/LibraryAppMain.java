@@ -29,7 +29,7 @@ public class LibraryAppMain {
                     }
                 }
                 case "listBooks" -> {
-                    List<Book> books = BookPersistor.listBooks(Integer.parseInt(arg));
+                    List<Book> books = BookPersistor.listBooks(arg);
                     for (Book book : books) {
                         System.out.println(book);
                     }
