@@ -29,7 +29,16 @@ public class LibraryAppMain {
                     }
                 }
                 case "listBooks" -> {
-                    List<Book> books = BookPersistor.listBooks(arg);
+                    int limit = 0;
+                    if (arg != null) {
+                        try {
+                            limit = Integer.parseInt(arg);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Argument muss eine Zahl sein.");
+                            return;
+                        }
+                    }
+                    List<Book> books = BookPersistor.getAll(limit);
                     for (Book book : books) {
                         System.out.println(book);
                     }

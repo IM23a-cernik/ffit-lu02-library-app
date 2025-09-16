@@ -15,17 +15,13 @@ public class BookPersistor {
     private static final Logger log = LoggerFactory.getLogger(BookPersistor.class);
     private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("localPU", Config.getProperties());
 
-    public static List<Book> listBooks(String limit) {
+    public static List<Book> getAll(int limit) {
         List<Book> books = new ArrayList<>();
-        if (limit == null) {
-            limit = "0";
-        }
-
         try {
             try (EntityManager em = emf.createEntityManager()) {
                 var query = em.createQuery("SELECT b FROM Book b ORDER BY id", Book.class);
-                if (Integer.parseInt(limit) > 0) {
-                    query.setMaxResults(Integer.parseInt(limit));
+                if (limit > 0) {
+                    query.setMaxResults(limit);
                 }
                 return query.getResultList();
             }
